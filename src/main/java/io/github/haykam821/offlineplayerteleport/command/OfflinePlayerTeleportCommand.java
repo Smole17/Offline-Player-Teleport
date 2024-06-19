@@ -65,14 +65,10 @@ public final class OfflinePlayerTeleportCommand {
 		ServerPlayerEntity target = FakePlayer.get(world, targetProfile);
 
 		WorldSaveHandler saveHandler = ((MinecraftServerMixin) server).getSaveHandler();
-		NbtCompound nbt = saveHandler.loadPlayerData(target);
-
-		if (nbt == null) {
-			throw EntityArgumentType.PLAYER_NOT_FOUND_EXCEPTION.create();
-		}
+		NbtCompound nbt = saveHandler.loadPlayerData(target).orElseThrow(EntityArgumentType.PLAYER_NOT_FOUND_EXCEPTION::create);
 
 		// Determine the world and position of the player for teleportation
-		RegistryKey<World> destinationKey = nbt != null ? DimensionType.worldFromDimensionNbt(new Dynamic<>(NbtOps.INSTANCE, nbt.get("Dimension"))).result().orElse(World.OVERWORLD) : World.OVERWORLD;
+		RegistryKey<World> destinationKey = DimensionType.worldFromDimensionNbt(new Dynamic<>(NbtOps.INSTANCE, nbt.get("Dimension"))).result().orElse(World.OVERWORLD);
 		ServerWorld destination = server.getWorld(destinationKey);
 
 		if (destination == null) {
