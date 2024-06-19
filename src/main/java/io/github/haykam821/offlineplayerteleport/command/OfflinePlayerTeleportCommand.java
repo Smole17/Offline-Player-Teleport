@@ -12,7 +12,6 @@ import com.mojang.serialization.Dynamic;
 import io.github.haykam821.offlineplayerteleport.OfflinePlayerTeleport;
 import io.github.haykam821.offlineplayerteleport.mixin.MinecraftServerMixin;
 import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.fabricmc.fabric.api.dimension.v1.FabricDimensions;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.GameProfileArgumentType;
@@ -26,9 +25,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.PlayerSaveHandler;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldSaveHandler;
 import net.minecraft.world.dimension.DimensionType;
 
 public final class OfflinePlayerTeleportCommand {
@@ -64,7 +63,7 @@ public final class OfflinePlayerTeleportCommand {
 		GameProfile targetProfile = targets.iterator().next();
 		ServerPlayerEntity target = FakePlayer.get(world, targetProfile);
 
-		WorldSaveHandler saveHandler = ((MinecraftServerMixin) server).getSaveHandler();
+		PlayerSaveHandler saveHandler = ((MinecraftServerMixin) server).getSaveHandler();
 		NbtCompound nbt = saveHandler.loadPlayerData(target).orElseThrow(EntityArgumentType.PLAYER_NOT_FOUND_EXCEPTION::create);
 
 		// Determine the world and position of the player for teleportation
@@ -75,11 +74,10 @@ public final class OfflinePlayerTeleportCommand {
 			destination = server.getOverworld();
 		}
 
-		TeleportTarget teleportTarget = new TeleportTarget(target.getPos(), Vec3d.ZERO, target.getYaw(), target.getPitch());
+		TeleportTarget teleportTarget = new TeleportTarget(destination, target.getPos(), Vec3d.ZERO, target.getYaw(), target.getPitch(), TeleportTarget.NO_OP);
 
 		// Teleport the player that executed the command
-		player.setPitch(target.getPitch());
-		FabricDimensions.teleport(player, destination, teleportTarget);
+		player.teleportTo(teleportTarget);
 
 		// Send feedback
 		boolean offline = server.getPlayerManager().getPlayer(targetProfile.getId()) == null;

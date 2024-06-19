@@ -33,7 +33,6 @@
 		"fabricloader": ">=0.4.0",
 		"java": ">=21",
 		"fabric-command-api-v2": "*",
-		"fabric-dimensions-v1": "*",
 		"fabric-events-interaction-v0": "*",
 		"fabric-resource-loader-v0": "*",
 		"fabric-permissions-api-v0": "*",
