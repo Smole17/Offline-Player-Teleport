@@ -82,8 +82,11 @@ public final class OfflinePlayerTeleportCommand {
 		FabricDimensions.teleport(player, destination, teleportTarget);
 
 		// Send feedback
+		boolean offline = server.getPlayerManager().getPlayer(targetProfile.getId()) == null;
+
 		context.getSource().sendFeedback(() -> {
-			return Text.translatable("command.offlineplayerteleport.success", player.getName(), target.getName());
+			String suffix = offline ? "" : ".online";
+			return Text.translatable("command.offlineplayerteleport.success" + suffix, player.getName(), target.getName());
 		}, true);
 
 		return Command.SINGLE_SUCCESS;

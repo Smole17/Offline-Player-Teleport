@@ -1,3 +1,4 @@
 {
-	"command.offlineplayerteleport.success": "Teleported %s to offline player %s"
+	"command.offlineplayerteleport.success": "Teleported %s to offline player %s",
+	"command.offlineplayerteleport.success.online": "Teleported %s to saved position of online player %s"
 }
