@@ -30,12 +30,11 @@
 	"license": "MIT",
 	"icon": "assets/offlineplayerteleport/icon.png",
 	"depends": {
-		"fabricloader": ">=0.4.0",
-		"java": ">=21",
+		"fabricloader": ">=0.15.11",
+		"java": ">=17",
 		"fabric-command-api-v2": "*",
 		"fabric-events-interaction-v0": "*",
 		"fabric-resource-loader-v0": "*",
-		"fabric-permissions-api-v0": "*",
-		"server_translations_api": "*"
+		"fabric-permissions-api-v0": "*"
 	}
 }
