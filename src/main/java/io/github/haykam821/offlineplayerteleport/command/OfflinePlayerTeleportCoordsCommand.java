@@ -9,7 +9,7 @@ import com.mojang.serialization.Dynamic;
 import io.github.haykam821.offlineplayerteleport.OfflinePlayerTeleport;
 import io.github.haykam821.offlineplayerteleport.mixin.MinecraftServerMixin;
 import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.fabricmc.fabric.api.dimension.v1.FabricDimensions;
+import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.nbt.NbtCompound;
@@ -20,25 +20,26 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSaveHandler;
 import net.minecraft.world.dimension.DimensionType;
 
 import java.util.Collection;
 
-public final class OfflinePlayerTeleportCommand {
-    private OfflinePlayerTeleportCommand() {
+public final class OfflinePlayerTeleportCoordsCommand {
+    private OfflinePlayerTeleportCoordsCommand() {
         return;
     }
     
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(CommandManager.literal(OfflinePlayerTeleport.MOD_ID)
+        dispatcher.register(CommandManager.literal(OfflinePlayerTeleport.MOD_ID + "coords")
             .requires(Permissions.require("offlineplayerteleport.command", 2))
             .then(CommandManager.argument("player", GameProfileArgumentType.gameProfile()))
-            .executes(OfflinePlayerTeleportCommand::execute));
+            .then(CommandManager.argument("world", GameProfileArgumentType.gameProfile()))
+            .then(CommandManager.argument("position", BlockPosArgumentType.blockPos()))
+            .executes(OfflinePlayerTeleportCoordsCommand::execute));
     }
     
     @SuppressWarnings("deprecation")
@@ -52,9 +53,10 @@ public final class OfflinePlayerTeleportCommand {
             throw EntityArgumentType.TOO_MANY_PLAYERS_EXCEPTION.create();
         }
         
+        BlockPos pos = BlockPosArgumentType.getBlockPos(context, "position");
+        
         ServerCommandSource source = context.getSource();
         
-        ServerPlayerEntity player = source.getPlayerOrThrow();
         MinecraftServer server = source.getServer();
         ServerWorld world = source.getWorld();
         
@@ -64,7 +66,6 @@ public final class OfflinePlayerTeleportCommand {
         WorldSaveHandler saveHandler = ((MinecraftServerMixin) server).getSaveHandler();
         NbtCompound nbt = saveHandler.loadPlayerData(target);
         
-        // Determine the world and position of the player for teleportation
         RegistryKey<World> destinationKey = DimensionType.worldFromDimensionNbt(new Dynamic<>(NbtOps.INSTANCE, nbt.get("Dimension"))).result().orElse(World.OVERWORLD);
         ServerWorld destination = server.getWorld(destinationKey);
         
@@ -72,20 +73,16 @@ public final class OfflinePlayerTeleportCommand {
             destination = server.getOverworld();
         }
         
-        TeleportTarget teleportTarget = new TeleportTarget(target.getPos(), Vec3d.ZERO, target.getYaw(), target.getPitch());
+        target.setPos(pos.getX(), pos.getY(), pos.getZ());
+        target.setWorld(destination);
         
-        // Teleport the player that executed the command
-        FabricDimensions.teleport(player, destination, teleportTarget);
+        saveHandler.savePlayerData(target);
         
-        // Send feedback
-        boolean offline = server.getPlayerManager().getPlayer(targetProfile.getId()) == null;
-        
-        String message = offline ? "Teleported %s to offline player %s" : "Teleported %s to saved position of online player %s";
         context.getSource().sendFeedback(
             Text.literal(
-                message.formatted(
-                    player.getName().getString(),
-                    target.getName().getString())
+                "%s position was changed to %d %d %d".formatted(
+                    target.getName().getString(),
+                    pos.getX(), pos.getY(), pos.getZ())
             ), true);
         
         return Command.SINGLE_SUCCESS;
