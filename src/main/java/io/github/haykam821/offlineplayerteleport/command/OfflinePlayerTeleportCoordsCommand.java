@@ -35,11 +35,10 @@ public final class OfflinePlayerTeleportCoordsCommand {
     
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(CommandManager.literal(OfflinePlayerTeleport.MOD_ID + "coords")
-            .requires(Permissions.require("offlineplayerteleport.command", 2))
-            .then(CommandManager.argument("player", GameProfileArgumentType.gameProfile()))
-            .then(CommandManager.argument("world", GameProfileArgumentType.gameProfile()))
-            .then(CommandManager.argument("position", BlockPosArgumentType.blockPos()))
-            .executes(OfflinePlayerTeleportCoordsCommand::execute));
+            .requires(Permissions.require("offlineplayerteleportcoods.command", 2))
+            .then(CommandManager.argument("player", GameProfileArgumentType.gameProfile())
+                .then(CommandManager.argument("position", BlockPosArgumentType.blockPos())
+                    .executes(OfflinePlayerTeleportCoordsCommand::execute))));
     }
     
     @SuppressWarnings("deprecation")
