@@ -37,8 +37,8 @@ public final class OfflinePlayerTeleportCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(CommandManager.literal(OfflinePlayerTeleport.MOD_ID)
             .requires(Permissions.require("offlineplayerteleport.command", 2))
-            .then(CommandManager.argument("player", GameProfileArgumentType.gameProfile()))
-            .executes(OfflinePlayerTeleportCommand::execute));
+            .then(CommandManager.argument("player", GameProfileArgumentType.gameProfile())
+                .executes(OfflinePlayerTeleportCommand::execute)));
     }
     
     @SuppressWarnings("deprecation")
